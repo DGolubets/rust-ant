@@ -1,8 +1,6 @@
 use std::cmp::*;
 use super::*;
 
-const MOVES_PER_SECOND: u32 = 120;
-const DEFAULT_MAP_SIZE: usize = 1000;
 const DEFAULT_VIEW_SIZE: u32 = 10;
 
 pub struct World {
@@ -10,12 +8,13 @@ pub struct World {
     map: Map,
     view: Rect,
     ant: Ant,
-    move_number: u32
+    move_number: u32,
+    moves_per_second: u32
 }
 
 impl World {
-    pub fn new() -> World {
-        let map = Map::new(DEFAULT_MAP_SIZE, DEFAULT_MAP_SIZE);
+    pub fn new(size: u32, mps: u32) -> World {
+        let map = Map::new(size as usize, size as usize);
         let ant = Ant::new((map.get_width() / 2) as i32, (map.get_height() / 2) as i32, Direction::Right);
         let view = Rect::new(
             ant.get_position().x - DEFAULT_VIEW_SIZE as i32 / 2,
@@ -29,7 +28,8 @@ impl World {
             map: map,
             view: view,
             ant: ant,
-            move_number: 0
+            move_number: 0,
+            moves_per_second: mps
         }
     }
 
@@ -47,7 +47,7 @@ impl World {
 
     pub fn tick(&mut self, dt: f64) {
         self.time += dt;
-        let target_moves_number = (self.time * MOVES_PER_SECOND as f64) as u32;
+        let target_moves_number = (self.time * self.moves_per_second as f64) as u32;
         let diff_moves_number = target_moves_number - self.move_number;
 
         for _ in 0..diff_moves_number {

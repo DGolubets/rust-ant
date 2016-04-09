@@ -4,7 +4,10 @@ extern crate glutin_window;
 extern crate opengl_graphics;
 
 mod model;
+mod settings;
+
 use model::*;
+use settings::Settings;
 
 use piston::window::WindowSettings;
 use piston::event_loop::*;
@@ -37,7 +40,7 @@ impl App {
 
         self.gl.draw(args.viewport(), |c, gl| {
             // Clear the screen.
-            clear(BLUE, gl);
+            clear(GRAY, gl);
 
             for i in view.x0..(view.x1) {
                 for j in view.y0..(view.y1) {
@@ -64,6 +67,8 @@ impl App {
 }
 
 fn main() {
+    let settings = Settings::load().expect("Can't load settings.");
+
     // Change this to OpenGL::V2_1 if not working.
     let opengl = OpenGL::V3_2;
 
@@ -77,7 +82,7 @@ fn main() {
         .build()
         .unwrap();
 
-    let world = World::new();
+    let world = World::new(settings.world_size, settings.moves_per_second);
 
     // Create a new game and run it.
     let mut app = App {
