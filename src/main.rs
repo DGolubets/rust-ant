@@ -1,4 +1,5 @@
 extern crate piston;
+extern crate piston_window;
 extern crate graphics;
 extern crate glutin_window;
 extern crate opengl_graphics;
@@ -9,19 +10,14 @@ mod settings;
 use model::*;
 use settings::Settings;
 
-use piston::window::WindowSettings;
-use piston::event_loop::*;
-use piston::input::*;
-use glutin_window::GlutinWindow as Window;
-use opengl_graphics::{ GlGraphics, OpenGL };
+use piston_window::*;
 
 pub struct App {
-    gl: GlGraphics, // OpenGL drawing backend.
     world: World
 }
 
 impl App {
-    fn render(&mut self, args: &RenderArgs) {
+    fn render(&mut self, e: &PistonWindow, args: &RenderArgs) {
         use graphics::*;
 
         const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
@@ -38,7 +34,7 @@ impl App {
         let cell_height = args.height as f64 / view.get_height() as f64;
         let cell_size = if cell_width < cell_height {cell_width} else {cell_height};
 
-        self.gl.draw(args.viewport(), |c, gl| {
+        e.draw_2d(|c, gl| {
             // Clear the screen.
             clear(GRAY, gl);
 
@@ -69,15 +65,11 @@ impl App {
 fn main() {
     let settings = Settings::load().expect("Can't load settings.");
 
-    // Change this to OpenGL::V2_1 if not working.
-    let opengl = OpenGL::V3_2;
-
     // Create an Glutin window.
-    let mut window: Window = WindowSettings::new(
+    let window: PistonWindow = WindowSettings::new(
             "Ant",
             [600, 600]
         )
-        .opengl(opengl)
         .exit_on_esc(true)
         .build()
         .unwrap();
@@ -86,14 +78,12 @@ fn main() {
 
     // Create a new game and run it.
     let mut app = App {
-        gl: GlGraphics::new(opengl),
         world: world
     };
 
-    let mut events = window.events();
-    while let Some(e) = events.next(&mut window) {
+    for e in window {
         if let Some(r) = e.render_args() {
-            app.render(&r);
+            app.render(&e, &r);
         }
 
         if let Some(u) = e.update_args() {
