@@ -17,7 +17,7 @@ pub struct App {
 }
 
 impl App {
-    fn render(&mut self, e: &PistonWindow, args: &RenderArgs) {
+    fn render(&mut self, args: &RenderArgs, e: &PistonWindow, glyphs: &mut Glyphs) {
         use graphics::*;
 
         const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
@@ -46,14 +46,26 @@ impl App {
                         Color::Red => RED,
                         Color::Green => GREEN
                     };
-                    let x = (i - view.x0) as f64 * cell_size;
-                    let y = (j - view.y0) as f64 * cell_size;
-                    let rect: [f64; 4] = [x, y, cell_size, cell_size];
 
-                    // Draw a box rotating around the middle of the screen.
-                    rectangle(color, rect, c.transform, gl);
+                    // skip default color for performance
+                    if color != GRAY {
+                        let x = (i - view.x0) as f64 * cell_size;
+                        let y = (j - view.y0) as f64 * cell_size;
+                        let rect: [f64; 4] = [x, y, cell_size, cell_size];
+
+                        // Draw a box rotating around the middle of the screen.
+                        rectangle(color, rect, c.transform, gl);
+                    }
                 }
             }
+
+            let transform = c.transform.trans(10.0, 42.0);
+            text::Text::new_color(BLUE, 32).draw(
+                format!("{}", self.world.get_move_number()).as_str(),
+                glyphs,
+                &c.draw_state,
+                transform, gl
+            );
         });
     }
 
@@ -81,9 +93,12 @@ fn main() {
         world: world
     };
 
+    let factory = window.factory.borrow().clone();
+    let mut glyphs = Glyphs::new("resources/Superstar M54.ttf", factory).unwrap();
+
     for e in window {
         if let Some(r) = e.render_args() {
-            app.render(&e, &r);
+            app.render(&r, &e, &mut glyphs);
         }
 
         if let Some(u) = e.update_args() {

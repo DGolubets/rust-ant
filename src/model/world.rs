@@ -45,6 +45,10 @@ impl World {
         &self.view
     }
 
+    pub fn get_move_number(&self) -> u32 {
+        self.move_number
+    }
+
     pub fn tick(&mut self, dt: f64) {
         self.time += dt;
         let target_moves_number = (self.time * self.moves_per_second as f64) as u32;
